@@ -2,7 +2,7 @@
 
 class Value:
 
-    def __init__(self, data, children=()):
+    def __init__(self, data, children=(), _op=''):
         self.data = data
         self._prev = set(children) # Previous nodes that created me.
 
@@ -10,11 +10,11 @@ class Value:
         return f'Value(data={self.data})'
     
     def __add__(self, other):
-        out = Value(self.data + other.data, (self, other)) # Value(data, _children) This new Value was created from these two parent nodes (self = a and other = b).
+        out = Value(self.data + other.data, (self, other), '+') # Value(data, _children) This new Value was created from these two parent nodes (self = a and other = b).
         return out
     
     def __mul__(self, other):
-        out = Value(self.data * other.data, (self, other)) # Value(data, _children) This new Value was created from these two parent nodes (self = a and other = b).)
+        out = Value(self.data * other.data, (self, other), '*') # Value(data, _children) This new Value was created from these two parent nodes (self = a and other = b).)
         return out
     
 a = Value(2.0)
