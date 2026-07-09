@@ -14,6 +14,7 @@ class Value:
         self.data = data                # the actual number this node holds
         self._prev = set(_children)   # parent Value(s) that combined to create me
         self._op = _op                  # which operator (+ or *) combined them 
+        self.grad = 0.0               # grad = sensitivity, how much o/p changes per tiny change in i/p
         self.label = label              # optional name for readability, e.g. 'a', 'd
 
     def __repr__(self):
