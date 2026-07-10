@@ -92,5 +92,31 @@ x1w1x2w2 = x1w1 + x2w2; x1w1x2w2.label = 'x1*w1 + x2*w2'
 n = x1w1x2w2 + b; n.label='n'
 o = n.tanh(); o.label='o'
 
+"""
+Manula backprop for single neuron
+o = tanh(n)
+d/dx tanh x = 1 -  tanh**2 x
+do/dn = 1 - tanh(n)**2 tanh(n) = 0
+so, = 1 - o**2
+"""
+o.grad = 1.0
+n.grad = 1 - (o.data**2)
+
+# dn/d(x1w1x2w2) + operator so b grad and x1w1x2w2 =1 (local dervative),
+# to find the original derivative apply chain rule, 0.5 (n.grad) * 1.0
+
+x1w1x2w2.grad = n.grad * 1.0 # 0.5
+b.grad = n.grad * 1.0 # 0.5 
+
+x1w1.grad = x1w1x2w2.grad * 1.0
+x2w2.grad = x1w1x2w2.grad * 1.0
+
+x2.grad = w2.data * x2w2.grad
+w2.grad = x2.data * x2w2.grad
+
+x1.grad = w1.data * x1w1.grad
+w1.grad = x1.data * x1w1.grad
+
+
 dot = draw_dot(o)
 dot.render('neuron_graph', view=True)
