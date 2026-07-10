@@ -1,5 +1,7 @@
 from micrograd import Value
 from draw_graph import draw_dot
+import matplotlib.pyplot as plt
+import numpy as np
 
 a = Value(2.0, label='a')
 b = Value(-3.0, label='b')
@@ -61,3 +63,34 @@ now full backprop dl/da =  dl/dd * dd/dc * de/da
 
 dot = draw_dot(l)
 dot.render('graph')
+
+# manual backprop with neuron
+# plt.plot(np.arange(-5,5,0.2), np.tanh(np.arange(-5,5,0.2)))
+# plt.grid()
+# plt.show()
+
+
+# inputs x1, x2
+x1 = Value(2.0, label='x1')
+x2 = Value(0.0, label='x2')
+
+# weights w1, w2
+w1 = Value(-3.0, label='w1')
+w2 = Value(1.0, label='w2')
+
+# bias of the neuron
+b = Value(6.8813735870195432, label='b')
+
+# neuron ; n = x1​w1 ​+ x2​w2 ​+ b
+# o = tanh(n)
+
+# x1w1 + x2w2 + b
+x1w1 = x1*w1; x1w1.label = 'x1w1'
+x2w2 = x2*w2; x2w2.label = 'x2w2'
+x1w1x2w2 = x1w1 + x2w2; x1w1x2w2.label = 'x1*w1 + x2*w2'
+
+n = x1w1x2w2 + b; n.label='n'
+o = n.tanh(); o.label='o'
+
+dot = draw_dot(o)
+dot.render('neuron_graph', view=True)

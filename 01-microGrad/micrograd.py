@@ -1,3 +1,5 @@
+import math
+
 # Micrograd Value class from scratch
 
 class Value:
@@ -31,4 +33,11 @@ class Value:
     def __mul__(self, other):
         # Same unpack->compute->repack pattern as __add__, just * instead of +
         out = Value(self.data * other.data, (self, other), '*')
+        return out
+    
+    # tanh for neurons
+    def tanh(self):
+        x = self.data
+        t = (math.exp(2*x) -1) / (math.exp(2*x) +1) # exp stands for exponential. computes e power x, where e = 2.718.. is euler's number
+        out = Value(t, (self, ), 'tanh')
         return out
