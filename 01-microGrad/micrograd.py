@@ -6,14 +6,16 @@ class Value:
 
     # Constructor that holds, what are the informations that a Value obj can remembers
     def __init__(self, data, _children=(), _op='',label=''):
-        # _children defaults to an empty tuple () because most Values start life
-        # as plain leaf inputs like a = Value(2.0), which weren't "made" from
-        # anything, so they have zero parents.
-        # set(()) → empty set, meaning "no parents, I'm a leaf."
-        # __add__ and __mul__ don't rely on this default — they explicitly pass
-        # (self, other) as _children, since a result like a+b genuinely does have two parents.
+        """
+        _children defaults to an empty tuple () because most Values start life as plain leaf inputs like a = Value(2.0), 
+        which weren't "made" from anything, so they have zero parents.
+        set(()) → empty set, meaning "no parents, I'm a leaf."
+        __add__ and __mul__ don't rely on this default — they explicitly pass (self, other) as _children, 
+        since a result like a+b genuinely does have two parents.
+        """
 
         self.data = data                # the actual number this node holds
+        self._backward = lambda: None  # default: "do nothing", true for leaf nodes, gets the fuction from operators or activation func()
         self._prev = set(_children)   # parent Value(s) that combined to create me
         self._op = _op                  # which operator (+ or *) combined them 
         self.grad = 0.0               # grad = sensitivity, how much o/p changes per tiny change in i/p
@@ -28,11 +30,21 @@ class Value:
         # must wrap result back as a Value (obj)
 
         out  = Value(self.data + other.data, (self, other), '+') # returns the new obj with info contains, 1. computed Value, 2. Parents, operator
+
+        def _backward():
+            self.grad = 1.0 * out.grad
+            other.grad = 1.0 * out.grad
+        out._backward = _backward # it stores the func() only, it doesnt not calling
         return out
     
     def __mul__(self, other):
         # Same unpack->compute->repack pattern as __add__, just * instead of +
         out = Value(self.data * other.data, (self, other), '*')
+
+        def _backward():
+            self.grad = other.data * out.grad
+            other.grad = self.data * out.grad
+        out._backward = _backward # it stores the func() only, it doesnt not calling
         return out
     
     # tanh for neurons
@@ -40,4 +52,8 @@ class Value:
         x = self.data
         t = (math.exp(2*x) -1) / (math.exp(2*x) +1) # exp stands for exponential. computes e power x, where e = 2.718.. is euler's number
         out = Value(t, (self, ), 'tanh')
-        return out
+
+        def _backward():
+            self.grad = (1 - t**2) * out.grad
+        out._backward = _backward # it stores the func() only, it doesnt not calling
+        return out              

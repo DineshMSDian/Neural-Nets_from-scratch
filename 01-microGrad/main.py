@@ -1,5 +1,5 @@
 from micrograd import Value
-from draw_graph import draw_dot
+from graphs.draw_graph import draw_dot
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -64,12 +64,12 @@ now full backprop dl/da =  dl/dd * dd/dc * de/da
 dot = draw_dot(l)
 dot.render('graph')
 
-# manual backprop with neuron
+# manual backprop with neuron initializing
 # plt.plot(np.arange(-5,5,0.2), np.tanh(np.arange(-5,5,0.2)))
 # plt.grid()
 # plt.show()
 
-
+# forward pass, before backprop
 # inputs x1, x2
 x1 = Value(2.0, label='x1')
 x2 = Value(0.0, label='x2')
@@ -92,6 +92,7 @@ x1w1x2w2 = x1w1 + x2w2; x1w1x2w2.label = 'x1*w1 + x2*w2'
 n = x1w1x2w2 + b; n.label='n'
 o = n.tanh(); o.label='o'
 
+# forward pass cpmpleted, here after manual back propogation
 """
 Manula backprop for single neuron
 o = tanh(n)
@@ -120,3 +121,15 @@ w1.grad = x1.data * x1w1.grad
 
 dot = draw_dot(o)
 dot.render('neuron_graph', view=True)
+
+# Auto grad (auto backprop)
+o.grad = 1.0
+o._backward()
+n._backward()
+b._backward()
+x1w1x2w2._backward()
+x1w1._backward()
+x2w2._backward()
+
+dot = draw_dot(o)
+dot.render('neuran_auto_backprop', view=True)
