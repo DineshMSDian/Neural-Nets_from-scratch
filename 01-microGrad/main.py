@@ -61,8 +61,8 @@ now full backprop dl/da =  dl/dd * dd/dc * de/da
                         = -2.0 * 1.0 * -3.0 = 
 """
 
-dot = draw_dot(l)
-dot.render('graph')
+# dot = draw_dot(l)
+# dot.render('graph')
 
 # manual backprop with neuron initializing
 # plt.plot(np.arange(-5,5,0.2), np.tanh(np.arange(-5,5,0.2)))
@@ -119,8 +119,8 @@ x1.grad = w1.data * x1w1.grad
 w1.grad = x1.data * x1w1.grad
 
 
-dot = draw_dot(o)
-dot.render('neuron_graph', view=True)
+# dot = draw_dot(o)
+# dot.render('neuron_graph', view=True)
 
 # Auto grad (auto backprop)
 o.grad = 1.0
@@ -131,5 +131,5 @@ x1w1x2w2._backward()
 x1w1._backward()
 x2w2._backward()
 
-dot = draw_dot(o)
-dot.render('neuran_auto_backprop', view=True)
+# dot = draw_dot(o)
+# dot.render('neuran_auto_backprop', view=True)
