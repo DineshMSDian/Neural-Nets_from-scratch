@@ -46,7 +46,54 @@ class Value:
             other.grad += self.data * out.grad
         out._backward = _backward # it stores the func() only, it doesnt not calling
         return out
+
+    # to brak the tanh and build it from ground up, we need
+    # tanh(x) = e^2x -1 / e^2x +1
+    # 1. we need multiply x by 2
+    # 2. then exponent
+    # 3. subtraction
+    # 4. divide the by denominator 
+    def exp(self):
+        x = self.data
+        out = Value(math.exp(x), (self,), 'exp')
+
+        def _backward():
+            # the derivative of euler's number e^x is exactly e^x which is (out.data)
+            # we multiply this local derivative (out.data) with the incomming derivative (out.grad)
+            self.grad = out.data * out.grad
+
+        out._backward = _backward
+        return out
+
+    # To negate a number (e.g., -x), we just multiply it by -1 using our __mul__ primitive.
+    def __neg__(self):
+        return self * -1
+        
+    # To subtract (e.g., a - b), we convert it to addition: a + (-b).
+    # This completely reuses the __add__ and __neg__ code! 
+    def __sub__(self, other):
+        return self + (-other)
     
+     # Like subtraction, division (e.g., a / b) is broken down using existing primitives by rewriting it as a multiplication: (a * (b^-1)).
+    def __truediv__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        return self * (other**-1)
+
+    # To make other**-1 work, we use a basic Power primitive:
+    def __pow__(self, other):
+        assert isinstance(other, (int, float))
+
+        # Forward pass: x^other
+        out = Value(self**other, (self,), f'**{other}')
+
+        # Derivative rule for x^n is n * x^(n-1) (The Power Rule)
+        def _backward():
+            # Local derivative (other * x^(other-1)) * upstream gradient
+            self.grad += (other * (self.data ** (other -1))) * out.grad
+
+        out._backward = _backward
+        return out
+
     # tanh for neurons
     def tanh(self):
         x = self.data
