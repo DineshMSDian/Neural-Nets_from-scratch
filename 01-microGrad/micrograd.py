@@ -24,11 +24,20 @@ class Value:
     def __repr__(self):
         return f'Value(data={self.data})' # for clean printng
 
+    def __rmul__(self, other):
+        return self * other
+
+    def __radd__(self, other):
+        return self + other
+    
+    def __rsub__(self, other):
+        return (-self) + other
+
     def __add__(self, other):
         # Called automatically when we add (a + b) a and b's are Values (obj)
         # Importantly our __add__ logic, unpack the .data from self and other and compute(addition) both then again repack as value
         # must wrap result back as a Value (obj)
-
+        other = other if isinstance(other, Value) else Value(other)
         out  = Value(self.data + other.data, (self, other), '+') # returns the new obj with info contains, 1. computed Value, 2. Parents, operator
 
         def _backward():
@@ -39,6 +48,7 @@ class Value:
     
     def __mul__(self, other):
         # Same unpack->compute->repack pattern as __add__, just * instead of +
+        other = other if isinstance(other, Value) else Value(other)
         out = Value(self.data * other.data, (self, other), '*')
 
         def _backward():
@@ -55,12 +65,12 @@ class Value:
     # 4. divide the by denominator 
     def exp(self):
         x = self.data
-        out = Value(math.exp(x), (self,), 'exp')
+        out = Value(math.exp(x), (self,), 'exp') # exp stands for exponential. computes e power x, where e = 2.718.. is euler's number
 
         def _backward():
             # the derivative of euler's number e^x is exactly e^x which is (out.data)
             # we multiply this local derivative (out.data) with the incomming derivative (out.grad)
-            self.grad = out.data * out.grad
+            self.grad += out.data * out.grad
 
         out._backward = _backward
         return out
@@ -72,6 +82,7 @@ class Value:
     # To subtract (e.g., a - b), we convert it to addition: a + (-b).
     # This completely reuses the __add__ and __neg__ code! 
     def __sub__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
         return self + (-other)
     
      # Like subtraction, division (e.g., a / b) is broken down using existing primitives by rewriting it as a multiplication: (a * (b^-1)).
@@ -84,7 +95,7 @@ class Value:
         assert isinstance(other, (int, float))
 
         # Forward pass: x^other
-        out = Value(self**other, (self,), f'**{other}')
+        out = Value(self.data ** other, (self,), f'**{other}')
 
         # Derivative rule for x^n is n * x^(n-1) (The Power Rule)
         def _backward():
@@ -94,6 +105,11 @@ class Value:
         out._backward = _backward
         return out
 
+    def cus_tanh(self):
+        x = self
+        e = (2*x).exp()
+        return (e -1) / (e +1)
+    
     # tanh for neurons
     def tanh(self):
         x = self.data
@@ -101,7 +117,7 @@ class Value:
         out = Value(t, (self, ), 'tanh')
 
         def _backward():
-            self.grad = (1 - t**2) * out.grad
+            self.grad += (1 - t**2) * out.grad # derivative of tanh is : 1 - tanh^2 * x, where x = incoming gradient (out.grad)
         out._backward = _backward # it stores the func() only, it doesnt not calling
         return out   
 
