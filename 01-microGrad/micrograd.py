@@ -56,4 +56,61 @@ class Value:
         def _backward():
             self.grad = (1 - t**2) * out.grad
         out._backward = _backward # it stores the func() only, it doesnt not calling
-        return out              
+        return out   
+
+    def backward(self):
+        """
+            Compute gradients for every Value node that contributes to self.
+
+            Step-by-step execution:
+            1. Initialize an empty list `topo` to store nodes in topological order.
+            2. Initialize an empty set `visited` to prevent visiting the same node
+            multiple times.
+            3. Define the recursive function `build_topo(v)`:
+            a. If v has not been visited, mark it as visited.
+            b. Recursively visit every parent in v._prev.
+            c. Append v to topo only after all its parents have been explored.
+            4. Call build_topo(self) to build the computational graph's topological
+            ordering, starting from the output node.
+            5. Set self.grad = 1.0 because d(self)/d(self) = 1.
+            6. Iterate through topo in reverse order:
+            a. Call node._backward() to propagate the node's gradient to its
+                parents using the local derivatives and the chain rule.
+            b. Each node's _backward function should use += to accumulate
+                gradients when multiple paths contribute to the same node.
+
+            Why reverse the topological order?
+            - build_topo visits parents before appending the current node.
+            - Therefore, the output node is appended after its ancestors.
+            - Reversing topo processes the output first, then propagates gradients
+            backward through the graph toward the input nodes.
+
+            Example:
+                a = Value(3.0, label='a')
+                b = a + a
+                b.backward()
+
+                b.grad == 1.0
+                a.grad == 2.0
+
+            Note:
+            - This method assumes gradients are initialized appropriately.
+            - Calling backward() repeatedly on the same graph can accumulate
+            gradients unless they are reset first.
+        """
+        topo = [] # for or backprobagation, we use topological sort using dfs
+        visited = set() 
+
+        def build_topo(v):
+            if v not in visited: # dfs
+                visited.add(v)
+
+                for child in v._prev:
+                    build_topo(child)
+
+                topo.append(v)
+        
+        build_topo(self)
+        self.grad = 1.0
+        for node in reversed(topo):
+            node._backward()
