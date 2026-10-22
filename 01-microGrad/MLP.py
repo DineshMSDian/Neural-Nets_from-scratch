@@ -14,6 +14,15 @@ class Neuron:
 
         return out_with_act_fun
 
+class Layer:
+    def __init__(self, nin, nout) -> None:
+        self.neuron = [Neuron(nin) for _ in range(nout)]
+
+    def __call__(self, x) -> Any:
+        outs = [n(x) for n in self.neuron]
+
+        return outs[0] if len(outs) == 1 else outs
+
 
 if __name__ == '__main__':
     n = Neuron(2)
