@@ -14,14 +14,20 @@ class Neuron:
 
         return out_with_act_fun
 
+    def parameters(self):
+        return self.w + [self.b]
+
 class Layer:
     def __init__(self, nin, nout) -> None:
-        self.neuron = [Neuron(nin) for _ in range(nout)]
+        self.neurons = [Neuron(nin) for _ in range(nout)]
 
     def __call__(self, x) -> Any:
-        outs = [n(x) for n in self.neuron]
+        outs = [n(x) for n in self.neurons]
 
         return outs[0] if len(outs) == 1 else outs
+
+    def parameters(self):
+        return [p for neuron in self.neurons for p in neuron.parameters()]
 
 class MLP:
     def __init__(self, nin, nouts) -> None:
@@ -33,6 +39,9 @@ class MLP:
             x = layer(x)
 
         return x
+
+    def parameters(self):
+        return [p for layer in self.layers for p in layer.parameters()]
         
 if __name__ == '__main__':
     # n = Neuron(2)
@@ -51,6 +60,7 @@ if __name__ == '__main__':
     out = n(x)
     print(len(n.layers))
     print(out.data)
+    print(len(n.parameters()))
 
     # x = [2.0, 3.0, -1.0]
     # network = MLP(3, [4, 4, 1])
