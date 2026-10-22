@@ -55,15 +55,45 @@ if __name__ == '__main__':
     # outputs = layer(x)
     # print(layer.neuron[0].w)
 
-    n = MLP(3, [4, 4, 1])
-    x = [2.0, -3.0, 2.1]
-    out = n(x)
-    print(len(n.layers))
-    print(out.data)
-    print(len(n.parameters()))
+    # n = MLP(3, [4, 4, 1])
+    # x = [2.0, -3.0, 2.1]
+    # out = n(x)
+    # print(len(n.layers))
+    # print(out.data)
+    # print(len(n.parameters()))
 
     # x = [2.0, 3.0, -1.0]
     # network = MLP(3, [4, 4, 1])
     # out = network(x)
     # print(len(network.layers))
     
+    # initialize the netwprk
+    network = MLP(3, [4, 4, 1])
+    xs = [
+        [2.0, 3.0, -1.0],
+        [0.3, -1.0, 0.5],
+        [0.5, 1.0, 1.0],
+        [1.0, 2.0, 1.6]
+    ]
+
+    ys = [1.0, -1.0, -1.0, 1.0]
+
+    for k in range(20):
+        # forward pass
+        predict = [network(x) for x in xs]
+
+        # calc loss
+        loss: Value = sum(((yout - ygt)**2 for ygt, yout in zip(ys, predict)), Value(0.0))
+
+        # reset grads
+        for p in network.parameters():
+            p.grad = 0.0
+
+        # backprop
+        loss.backward()
+
+        # update parameter
+        for p in network.parameters():
+            p.data += -0.05 * p.grad
+
+        print(f'Iteration: {k} - Loss: {loss}')
