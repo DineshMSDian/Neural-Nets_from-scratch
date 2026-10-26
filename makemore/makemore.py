@@ -1,4 +1,5 @@
 import torch
+import matplotlib.pyplot as plt
 
 def load():
     # load dataset
@@ -35,9 +36,20 @@ def count_bigram_in_torch(words):
             ix1 = stoi[ch1]
             ix2 = stoi[ch2]
             N[ix1, ix2] += 1
-    return N
+    return N, stoi
             
+def visualize(N, stoi):
+    itos = {i:s for s, i in stoi.items()}
+    plt.figure(figsize=(16, 16))
+    plt.imshow(N, cmap='Blues')
+    for i in range(28):
+        for j in range(28):
+            chstr = itos[i] + itos[j]
+            plt.text(j, i, chstr, ha='center', va='bottom', color='gray')
+            plt.text(j, i, N[i,j].item(), ha='center', va='top', color='gray')
 
+    plt.axis('off')
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -48,5 +60,7 @@ if __name__ == '__main__':
     b = count_bigram_in_dict(words[:10])
     print(sorted(b.items(), key = lambda kv: -kv[1]))
     print('-'*20)
-    N = count_bigram_in_torch(words[:10])
+    N, stoi = count_bigram_in_torch(words)
     print(N)
+
+    visualize(N, stoi)
