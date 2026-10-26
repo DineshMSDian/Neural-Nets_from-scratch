@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def load():
     # load dataset
-    with open(r'makemore\dataset.txt', 'r') as f:
+    with open(r'02-makemore\dataset.txt', 'r') as f:
         words = f.read().splitlines()
 
     # cleaning
@@ -25,8 +25,9 @@ def count_bigram_in_dict(words):
 def count_bigram_in_torch(words):
     N = torch.zeros((27, 27), dtype=torch.int32) # created a 2d array od 28x28
     chrs = sorted(set(''.join(words)))
-    stoi = {s:i+1 for i,s in enumerate(chrs)} # lookup table
+    stoi = {s:i+1 for i,s in enumerate(chrs)} # lookup table for str to int
     stoi['.'] = 0
+    itos = {i:s for s, i in stoi.items()} # lookup table for int to str
 
     for w in words:
         chs = ['.'] + list(w) + ['.']
@@ -35,7 +36,7 @@ def count_bigram_in_torch(words):
             ix1 = stoi[ch1]
             ix2 = stoi[ch2]
             N[ix1, ix2] += 1
-    return N, stoi
+    return N, stoi, itos
             
 def visualize(N, stoi):
     itos = {i:s for s, i in stoi.items()}
@@ -50,16 +51,35 @@ def visualize(N, stoi):
     plt.axis('off')
     plt.show()
 
+def sampling(N, itos):
+
+    g = torch.Generator().manual_seed(2147483647)
+
+    for i in range(10):
+        ix = 0
+        out = []
+        while True:
+            p = N[ix].float()
+            p = p / p.sum()
+            ix = torch.multinomial(p, num_samples=1,replacement=True, generator=g).item()
+            out.append(itos[ix])
+            if ix == 0:
+                break
+
+        print(''.join(out))
+
 
 if __name__ == '__main__':
 
     words = load()
-    print(words[:2])
+    # print(words[:2])
 
     b = count_bigram_in_dict(words[:10])
-    print(sorted(b.items(), key = lambda kv: -kv[1]))
-    print('-'*20)
-    N, stoi = count_bigram_in_torch(words)
-    print(N)
+    # print(sorted(b.items(), key = lambda kv: -kv[1]))
+    # print('-'*20)
+    N, stoi, itos = count_bigram_in_torch(words)
+    # print(N)
 
-    visualize(N, stoi)
+    # visualize(N, stoi)
+
+    sampling(N, itos)
