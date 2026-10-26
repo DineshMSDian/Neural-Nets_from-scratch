@@ -23,14 +23,13 @@ def count_bigram_in_dict(words):
     return b
 
 def count_bigram_in_torch(words):
-    N = torch.zeros((28, 28), dtype=torch.int32) # created a 2d array od 28x28
+    N = torch.zeros((27, 27), dtype=torch.int32) # created a 2d array od 28x28
     chrs = sorted(set(''.join(words)))
-    stoi = {s:i for i,s in enumerate(chrs)} # lookup table
-    stoi['<S>'] = 26
-    stoi['<E>'] = 27
+    stoi = {s:i+1 for i,s in enumerate(chrs)} # lookup table
+    stoi['.'] = 0
 
     for w in words:
-        chs = ['<S>'] + list(w) + ['<E>']
+        chs = ['.'] + list(w) + ['.']
 
         for ch1, ch2 in zip(chs, chs[1:]):
             ix1 = stoi[ch1]
@@ -42,8 +41,8 @@ def visualize(N, stoi):
     itos = {i:s for s, i in stoi.items()}
     plt.figure(figsize=(16, 16))
     plt.imshow(N, cmap='Blues')
-    for i in range(28):
-        for j in range(28):
+    for i in range(27):
+        for j in range(27):
             chstr = itos[i] + itos[j]
             plt.text(j, i, chstr, ha='center', va='bottom', color='gray')
             plt.text(j, i, N[i,j].item(), ha='center', va='top', color='gray')
